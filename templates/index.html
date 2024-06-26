@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Zero-Knowledge Proof ML</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Zero-Knowledge Proof ML</h1>
+    <h2>Input Data</h2>
+    <form id="inputForm">
+        <label>Sepal Length:</label>
+        <input type="text" id="sepal_length" required><br>
+        <label>Sepal Width:</label>
+        <input type="text" id="sepal_width" required><br>
+        <label>Petal Length:</label>
+        <input type="text" id="petal_length" required><br>
+        <label>Petal Width:</label>
+        <input type="text" id="petal_width" required><br>
+        <button type="submit">Get Prediction and Proof</button>
+    </form>
+
+    <h2>Results</h2>
+    <p id="prediction"></p>
+    <p id="proof"></p>
+
+    <h2>Verify Proof</h2>
+    <form id="verifyForm">
+        <button type="submit">Verify Proof</button>
+    </form>
+    <p id="verification"></p>
+
+    <script>
+        $('#inputForm').on('submit', function(event) {
+            event.preventDefault();
+            const inputData = {
+                sepal_length: $('#sepal_length').val(),
+                sepal_width: $('#sepal_width').val(),
+                petal_length: $('#petal_length').val(),
+                petal_width: $('#petal_width').val()
+            };
+
+            $.ajax({
+                url: '/predict',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ input_data: Object.values(inputData).map(Number) }),
+                success: function(response) {
+                    $('#prediction').text('Prediction: ' + response.prediction);
+                    $('#proof').text('Proof: ' + JSON.stringify(response.proof, null, 2));
+                }
+            });
+        });
+
+        $('#verifyForm').on('submit', function(event) {
+            event.preventDefault();
+            const inputData = {
+                sepal_length: $('#sepal_length').val(),
+                sepal_width: $('#sepal_width').val(),
+                petal_length: $('#petal_length').val(),
+                petal_width: $('#petal_width').val()
+            };
+
+            $.ajax({
+                url: '/verify',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    input_data: Object.values(inputData).map(Number),
+                    proof: JSON.parse($('#proof').text().replace('Proof: ', ''))
+                }),
+                success: function(response) {
+                    $('#verification').text('Proof valid: ' + response.is_valid);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
