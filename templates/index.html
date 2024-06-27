@@ -2,11 +2,61 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Zero-Knowledge Proof ML</title>
+    <title></title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-    <h1>Zero-Knowledge Proof ML</h1>
+    <h1>proof ml model inference integrity</h1>
+
+    <h2>Exemplary Iris Dataset Values</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Sepal Length</th>
+                <th>Sepal Width</th>
+                <th>Petal Length</th>
+                <th>Petal Width</th>
+                <th>Label</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>5.1</td>
+                <td>3.5</td>
+                <td>1.4</td>
+                <td>0.2</td>
+                <td>setosa</td>
+            </tr>
+            <tr>
+                <td>7.0</td>
+                <td>3.2</td>
+                <td>4.7</td>
+                <td>1.4</td>
+                <td>versicolor</td>
+            </tr>
+            <tr>
+                <td>6.3</td>
+                <td>3.3</td>
+                <td>6.0</td>
+                <td>2.5</td>
+                <td>virginica</td>
+            </tr>
+        </tbody>
+    </table>
+
     <h2>Input Data</h2>
     <form id="inputForm">
         <label>Sepal Length:</label>
@@ -23,6 +73,8 @@
     <h2>Results</h2>
     <p id="prediction"></p>
     <p id="proof"></p>
+    <label for="altered_proof">Alter Proof:</label>
+    <input type="text" id="altered_proof"><br>
 
     <h2>Verify Proof</h2>
     <form id="verifyForm">
@@ -47,7 +99,8 @@
                 data: JSON.stringify({ input_data: Object.values(inputData).map(Number) }),
                 success: function(response) {
                     $('#prediction').text('Prediction: ' + response.prediction);
-                    $('#proof').text('Proof: ' + JSON.stringify(response.proof, null, 2));
+                    $('#proof').text('Proof: ' + response.proof);
+                    $('#altered_proof').val(response.proof); // Set the proof in the input field
                 }
             });
         });
@@ -60,6 +113,8 @@
                 petal_length: $('#petal_length').val(),
                 petal_width: $('#petal_width').val()
             };
+            const alteredProof = $('#altered_proof').val();
+            const prediction = $('#prediction').text().replace('Prediction: ', '');
 
             $.ajax({
                 url: '/verify',
@@ -67,7 +122,8 @@
                 contentType: 'application/json',
                 data: JSON.stringify({
                     input_data: Object.values(inputData).map(Number),
-                    proof: JSON.parse($('#proof').text().replace('Proof: ', ''))
+                    proof: alteredProof,
+                    prediction: prediction
                 }),
                 success: function(response) {
                     $('#verification').text('Proof valid: ' + response.is_valid);
